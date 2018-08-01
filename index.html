@@ -1,0 +1,69 @@
+<html>
+<body>
+
+<h1>Hide secret messages</h1>
+Enter the message: <input id="message" />
+<div>
+  <svg id="canvas">
+
+  </svg>
+</div>
+
+<script type="text/javascript">
+  (() => {
+    const svgNS = "http://www.w3.org/2000/svg";
+    const drawMessage = (thickness, str, svg) => {
+      svg.innerHTML = "";
+      const size = thickness * (str.length * 4 + 8);
+      svg.setAttributeNS(null, 'width', size);
+      svg.setAttributeNS(null, 'height', size);
+
+      const elements = str.split("").forEach((c, i) => {
+        if (c === ' ') return;
+        const r = thickness * (i * 2 + 4);
+        const ctr = size / 2;
+        const circle = document.createElementNS(svgNS, 'circle');
+        circle.setAttributeNS(null, 'cx', ctr);
+        circle.setAttributeNS(null, 'cy', ctr);
+        circle.setAttributeNS(null, 'r', r);
+        circle.setAttributeNS(null, 'stroke', 'black');
+        circle.setAttributeNS(null, 'stroke-width', thickness);
+        circle.setAttributeNS(null, 'fill', 'rgba(0,0,0,0)');
+        svg.appendChild(circle);
+        // constructing the points for polygon
+        const unitAngle = Math.PI / 26;
+        const outerx = (r + 6) * Math.tan(unitAngle);
+        const outery = r + 6;
+        const innerx = Math.sin(unitAngle) * (r - 6);
+        const innery = Math.cos(unitAngle) * (r - 6);
+        const angle = (c.charCodeAt(0) - 'a'.charCodeAt(0)) * Math.PI * 2 / 26;
+        const cos = Math.cos(angle);
+        const sin = Math.sin(angle);
+        // four points: (-inner, r - 5) (inner, r - 5) (outer, r + 5), (-outer, r + 5)
+        const [ x1, y1 ] = [-innerx, innery];
+        const [ x2, y2 ] = [innerx, innery];
+        const [ x3, y3 ] = [outerx, outery];
+        const [ x4, y4 ] = [-outerx, outery];
+        const rotate =
+          (x, y) =>
+            `${ctr - (x * cos - y * sin)},${ctr - (x * sin + y * cos)}`;
+        const p1 = rotate(x1, y1);
+        const p2 = rotate(x2, y2);
+        const p3 = rotate(x3, y3);
+        const p4 = rotate(x4, y4);
+        // create polygon
+        const polygon = document.createElementNS(svgNS, 'polygon'); polygon.setAttributeNS(null, 'points', `${p1} ${p2} ${p3} ${p4}`);
+        polygon.setAttributeNS(null, 'fill', 'white');
+        svg.appendChild(polygon);
+      }, new Array());
+    };
+
+    const msg = document.getElementById('message');
+    const canvas = document.getElementById('canvas');
+    msg.addEventListener('keyup',
+      e => drawMessage(10, e.target.value, canvas));
+  })();
+</script>
+
+</body>
+</html>
